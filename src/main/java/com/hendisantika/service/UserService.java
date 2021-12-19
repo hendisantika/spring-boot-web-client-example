@@ -33,4 +33,13 @@ public class UserService {
                 .retrieve()
                 .bodyToMono(User.class);
     }
+
+    public User getUserByIdSync(final String id) {
+        return webClient
+                .get()
+                .uri(USERS_URL_TEMPLATE, id)
+                .retrieve()
+                .bodyToMono(User.class)
+                .block();
+    }
 }
