@@ -3,6 +3,7 @@ package com.hendisantika.service;
 import com.hendisantika.model.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -64,6 +65,19 @@ public class UserService {
                 .bodyToMono(User.class)
                 .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
                 .onErrorResume(error -> Mono.just(new User()))
+                .block();
+    }
+
+    public User getUserWithErrorHandling(final String id) {
+        return webClient
+                .get()
+                .uri(BROKEN_URL_TEMPLATE, id)
+                .retrieve()
+                .onStatus(HttpStatus::is4xxClientError,
+                        error -> Mono.error(new RuntimeException("API not found")))
+                .onStatus(HttpStatus::is5xxServerError,
+                        error -> Mono.error(new RuntimeException("Server is not responding")))
+                .bodyToMono(User.class)
                 .block();
     }
 }
