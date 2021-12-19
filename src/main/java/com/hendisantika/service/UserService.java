@@ -55,4 +55,15 @@ public class UserService {
                 .retryWhen(Retry.fixedDelay(MAX_RETRY_ATTEMPTS, Duration.ofMillis(DELAY_MILLIS)))
                 .block();
     }
+
+    public User getUserWithFallback(final String id) {
+        return webClient
+                .get()
+                .uri(BROKEN_URL_TEMPLATE, id)
+                .retrieve()
+                .bodyToMono(User.class)
+                .doOnError(error -> log.error("An error has occurred {}", error.getMessage()))
+                .onErrorResume(error -> Mono.just(new User()))
+                .block();
+    }
 }
