@@ -1,9 +1,11 @@
 package com.hendisantika.service;
 
+import com.hendisantika.model.User;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 /**
  * Created by IntelliJ IDEA.
@@ -23,4 +25,12 @@ public class UserService {
     private static final String USERS_URL_TEMPLATE = "/users/{id}";
     private static final String BROKEN_URL_TEMPLATE = "/broken-url/{id}";
     private final WebClient webClient;
+
+    public Mono<User> getUserByIdAsync(final String id) {
+        return webClient
+                .get()
+                .uri(USERS_URL_TEMPLATE, id)
+                .retrieve()
+                .bodyToMono(User.class);
+    }
 }
