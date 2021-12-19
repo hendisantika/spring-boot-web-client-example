@@ -6,6 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
+
+import java.time.Duration;
 
 /**
  * Created by IntelliJ IDEA.
@@ -40,6 +43,16 @@ public class UserService {
                 .uri(USERS_URL_TEMPLATE, id)
                 .retrieve()
                 .bodyToMono(User.class)
+                .block();
+    }
+
+    public User getUserWithRetry(final String id) {
+        return webClient
+                .get()
+                .uri(BROKEN_URL_TEMPLATE, id)
+                .retrieve()
+                .bodyToMono(User.class)
+                .retryWhen(Retry.fixedDelay(MAX_RETRY_ATTEMPTS, Duration.ofMillis(DELAY_MILLIS)))
                 .block();
     }
 }
